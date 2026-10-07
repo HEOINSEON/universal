@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>세계 시민 프로젝트</title>
+<style>
+  :root{
+    --cream:#FBF3E2; --card:#FFFFFF; --ink:#262220; --ink-soft:#6b6560;
+    --pink:#F0729B; --pink-deep:#D85280; --mustard:#F6D488; --mustard-deep:#E0B854;
+    --teal:#A9DFDB; --teal-deep:#5FB6AF; --gray:#C3C0CC; --red:#E5695E; --border:#231F1D;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--cream);
+    font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;color:var(--ink);}
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;
+    background-image:radial-gradient(circle at 8% 12%, rgba(240,114,155,0.16) 0, transparent 40%),
+      radial-gradient(circle at 92% 85%, rgba(169,223,219,0.20) 0, transparent 42%);}
+  .stage{width:100%;max-width:1020px;}
+  .eyebrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:10px;flex-wrap:wrap;}
+  .brand{font-weight:800;font-size:15px;letter-spacing:0.5px;}
+  .eyebrow-right{display:flex;align-items:center;gap:14px;}
+  .mute-btn{border:2px solid var(--border);background:var(--card);border-radius:999px;
+    width:38px;height:38px;font-size:16px;cursor:pointer;box-shadow:0 3px 0 var(--border);}
+  .mute-btn:active{transform:translateY(2px);box-shadow:none;}
+  .locks{display:flex;gap:8px;flex-wrap:wrap;max-width:420px;}
+  .lock{width:38px;height:38px;border-radius:50%;border:3px solid var(--border);background:var(--card);
+    display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .4s ease;flex:none;}
+  .lock.solved{background:var(--pink);transform:scale(1.08) rotate(-6deg);box-shadow:0 4px 0 var(--pink-deep);}
+
+  .code-strip{display:flex;gap:8px;justify-content:center;margin:6px 0 22px;flex-wrap:wrap;}
+  .code-slot{width:52px;height:60px;border-radius:12px;border:3px solid var(--border);background:var(--card);
+    display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--gray);
+    transition:all .35s ease;flex:none;}
+  .code-slot.filled{background:var(--mustard);color:var(--ink);transform:translateY(-4px);
+    box-shadow:0 5px 0 var(--mustard-deep);animation:pop .45s ease;}
+  @keyframes pop{0%{transform:scale(0.6) translateY(0);}60%{transform:scale(1.15) translateY(-8px);}100%{transform:scale(1) translateY(-4px);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-10px);}40%{transform:translateX(9px);}
+    60%{transform:translateX(-6px);}80%{transform:translateX(4px);}}
+  .shake{animation:shake .45s ease;}
+
+  .card{background:var(--card);border:3px solid var(--border);border-radius:26px;padding:44px 48px;
+    box-shadow:0 8px 0 var(--border);position:relative;overflow:hidden;}
+  .screen{display:none;}
+  .screen.active{display:block;animation:fadein .35s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .badge{display:inline-block;background:var(--pink);color:#fff;font-weight:800;font-size:14px;
+    padding:8px 18px;border-radius:999px;border:3px solid var(--border);margin-bottom:20px;}
+  .badge.teal{background:var(--teal-deep);}
+  .badge.mustard{background:var(--mustard-deep);color:var(--ink);}
+  h1{font-size:30px;margin:0 0 14px;line-height:1.35;font-weight:800;}
+  h2{font-size:24px;margin:0 0 22px;line-height:1.4;font-weight:800;}
+  p.lead{font-size:17px;line-height:1.75;margin:0 0 12px;}
+  ul.brief{margin:20px 0 24px;padding:0;list-style:none;}
+  ul.brief li{display:flex;gap:12px;align-items:flex-start;font-size:16px;line-height:1.6;margin-bottom:12px;}
+  ul.brief li .num{flex:none;width:28px;height:28px;border-radius:50%;background:var(--teal);
+    border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;}
+
+  .user-info-section{margin:24px 0 20px;padding:20px;background:var(--cream);border:3px solid var(--border);border-radius:18px;}
+  .user-info-title{font-size:16px;font-weight:800;margin-bottom:12px;}
+  .input-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media(max-width:500px){ .input-grid{grid-template-columns:1fr;} }
+  .input-field{display:flex;flex-direction:column;gap:6px;}
+  .input-field label{font-size:14px;font-weight:700;color:var(--ink-soft);}
+  .input-field input{padding:12px 14px;border:2.5px solid var(--border);border-radius:12px;font-size:15px;
+    font-weight:700;outline:none;background:var(--card);font-family:inherit;}
+  .input-field input:focus{border-color:var(--pink-deep);box-shadow:0 0 0 3px rgba(240,114,155,0.25);}
+  .error-text{color:var(--red);font-weight:800;font-size:14px;text-align:center;margin-bottom:10px;height:20px;}
+
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;}
+  button{font-family:inherit;cursor:pointer;border:3px solid var(--border);border-radius:16px;background:var(--card);
+    padding:16px 22px;font-size:16px;font-weight:700;box-shadow:0 5px 0 var(--border);
+    transition:transform .12s ease, box-shadow .12s ease;}
+  button:active{transform:translateY(3px);box-shadow:0 2px 0 var(--border);}
+  .btn-primary{background:var(--pink);color:#fff;}
+  .btn-primary:hover{background:var(--pink-deep);}
+  .btn-ghost:hover{background:var(--mustard);}
+  .mode-card{border:3px solid var(--border);border-radius:18px;padding:20px;flex:1;min-width:220px;
+    background:var(--cream);cursor:pointer;text-align:left;box-shadow:0 5px 0 var(--border);}
+  .mode-card:active{transform:translateY(3px);box-shadow:0 2px 0 var(--border);}
+  .mode-card b{display:block;font-size:17px;margin-bottom:6px;}
+  .mode-card span{font-size:13.5px;color:var(--ink-soft);}
+  .mode-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;}
+
+  .round-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:16px;flex-wrap:wrap;}
+  .round-label span.tag{background:var(--teal);border:2px solid var(--border);border-radius:999px;
+    padding:5px 14px;font-weight:800;font-size:13px;}
+  .timer-wrap{flex:1;max-width:220px;height:16px;border:2px solid var(--border);border-radius:999px;
+    background:var(--cream);overflow:hidden;}
+  .timer-bar{height:100%;background:var(--mustard-deep);width:100%;transition:width 1s linear;}
+  .timer-bar.danger{background:var(--red);}
+
+  .question{font-size:22px;font-weight:800;line-height:1.5;margin:14px 0 26px;}
+  .options{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:8px;}
+  .opt{text-align:left;padding:18px 22px;font-size:17px;display:flex;justify-content:space-between;align-items:center;}
+  .opt .oi{font-weight:800;color:var(--ink-soft);margin-right:10px;}
+  .opt.selected{background:var(--mustard);}
+  .opt.correct{background:var(--teal);border-color:var(--teal-deep);}
+  .opt.wrong-picked{background:#F6C7C1;}
+  .opt[disabled]{cursor:default;}
+  .opt:not([disabled]):hover{background:var(--cream);}
+
+  .reveal{margin-top:22px;padding:20px 22px;background:var(--cream);border:3px dashed var(--border);
+    border-radius:18px;display:none;}
+  .reveal.show{display:block;animation:fadein .3s ease;}
+  .reveal .ans{font-size:20px;font-weight:800;margin-bottom:8px;}
+  .reveal .fact{font-size:15.5px;line-height:1.7;color:var(--ink-soft);margin-bottom:10px;}
+  .reveal .src{font-size:13px;color:var(--ink-soft);margin-bottom:14px;}
+  .code-reveal{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;flex-wrap:wrap;}
+  .code-reveal .digit{background:var(--mustard);border:2px solid var(--border);border-radius:10px;
+    padding:6px 14px;font-size:18px;font-weight:800;}
+
+  .success-code{display:flex;gap:10px;justify-content:center;margin:22px 0 20px;flex-wrap:wrap;}
+  .success-code .d{min-width:52px;height:64px;padding:0 8px;border-radius:14px;background:var(--pink);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;
+    border:3px solid var(--border);box-shadow:0 5px 0 var(--pink-deep);animation:pop .5s ease;}
+  .center{text-align:center;}
+  .sdg-note{background:var(--teal);border:3px solid var(--border);border-radius:18px;padding:18px 22px;
+    margin:0 0 28px;font-size:15.5px;line-height:1.8;}
+
+  /* 소요 시간 및 결과 리포트 카운터 스타일 */
+  .result-summary-box{background:var(--cream);border:3px solid var(--border);border-radius:20px;padding:20px 24px;margin:18px 0 22px;}
+  .time-hero-badge{display:inline-flex;align-items:center;gap:10px;background:var(--mustard);border:3px solid var(--border);
+    padding:12px 24px;border-radius:16px;box-shadow:0 4px 0 var(--mustard-deep);margin-bottom:16px;}
+  .time-hero-badge .time-val{font-size:24px;font-weight:900;color:var(--ink);}
+  .summary-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));gap:10px;text-align:center;}
+  .summary-item{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:10px;font-size:14px;}
+  .summary-item .lbl{font-size:12px;color:var(--ink-soft);margin-bottom:4px;font-weight:700;}
+  .summary-item .val{font-size:16px;font-weight:800;}
+
+  .keypad-wrap{display:flex;flex-direction:column;align-items:center;gap:18px;}
+  .keypad-display{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:640px;}
+  .kd-cell{width:40px;height:52px;border:3px solid var(--border);border-radius:10px;background:var(--cream);
+    display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex:none;}
+  .kd-cell.on{background:var(--mustard);}
+  .keypad{display:grid;grid-template-columns:repeat(3,72px);gap:12px;}
+  .keypad button{padding:0;height:60px;font-size:20px;}
+  .hint-text{font-size:14px;color:var(--ink-soft);text-align:center;max-width:560px;}
+  .wrong-msg{font-size:14px;color:var(--red);font-weight:800;text-align:center;height:18px;}
+
+  footer.progress{margin-top:26px;text-align:center;font-size:13px;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+<!-- Application Structure Plan: Single-page application designed as an escape room quiz with time tracking. -->
+<!-- Visualization & Content Choices: Card-based UI, timer & live stopwatch calculation, code unlocking mechanism. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<div class="stage">
+  <div class="eyebrow">
+    <div class="brand">세계 시민 프로젝트</div>
+    <div class="eyebrow-right">
+      <button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+      <div class="locks" id="locks"></div>
+    </div>
+  </div>
+
+  <div class="code-strip" id="codeStrip"></div>
+
+  <div class="card" id="cardEl">
+
+    <section class="screen active" id="screen-intro">
+      <span class="badge">MISSION BRIEFING</span>
+      <h1>탈출 코드를 모아 문을 열어라!</h1>
+      <p class="lead">이 방에서 나가려면, 숨겨진 <strong>탈출 코드</strong>를 모아야 합니다.</p>
+      <ul class="brief">
+        <li><span class="num">1</span> 화면에 뜨는 질문에 <strong>손을 들어 감으로</strong> 답을 골라요. <strong>제한시간 8초!</strong></li>
+        <li><span class="num">2</span> 라운드마다 정답과 함께 <strong>탈출 코드 숫자</strong>가 하나씩 공개돼요.</li>
+        <li><span class="num">3</span> 마지막엔 <strong>코드를 직접 입력</strong>해서 문을 열어야 해요.</li>
+      </ul>
+
+      <div class="user-info-section">
+        <div class="user-info-title">👤 참가자 정보 입력</div>
+        <div class="input-grid">
+          <div class="input-field">
+            <label for="studentIdInput">학번 (예: 20101)</label>
+            <input type="text" id="studentIdInput" placeholder="학번을 입력하세요" autocomplete="off">
+          </div>
+          <div class="input-field">
+            <label for="studentNameInput">이름</label>
+            <input type="text" id="studentNameInput" placeholder="이름을 입력하세요" autocomplete="off">
+          </div>
+        </div>
+      </div>
+      
+      <div class="error-text" id="introError"></div>
+
+      <p class="lead" style="font-size:15px;color:var(--ink-soft);margin-bottom:6px;">정보 입력 후 난이도를 고르면 게임과 타이머가 시작됩니다!</p>
+      <div class="mode-row">
+        <button class="mode-card" onclick="startGame(3)">
+          <b>🙂 기본 모드 · 3라운드</b>
+          <span>약 3~5분 · 3문제</span>
+        </button>
+        <button class="mode-card" onclick="startGame(7)">
+          <b>🔥 챌린지 모드 · 7라운드</b>
+          <span>약 7~10분 · 7문제</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-round">
+      <div class="round-top">
+        <div class="round-label"><span class="tag" id="roundTag">잠금 1 / 3</span></div>
+        <div class="timer-wrap"><div class="timer-bar" id="timerBar"></div></div>
+      </div>
+      <div class="question" id="questionText"></div>
+      <div class="options" id="optsContainer"></div>
+      <div class="reveal" id="revealPanel">
+        <div class="ans" id="ansText"></div>
+        <div class="fact" id="factText"></div>
+        <div class="src" id="srcText"></div>
+        <div class="code-reveal">탈출 코드 숫자 공개 <span class="digit" id="digitText"></span></div>
+      </div>
+      <div class="btn-row" id="nextBtnRow" style="display:none;margin-top:18px;">
+        <button class="btn-primary" id="nextBtn" onclick="goNext()"></button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-keypad">
+      <span class="badge mustard">FINAL LOCK</span>
+      <h2 class="center">공개된 숫자를 순서대로 이어붙이면<br>진짜 탈출 코드가 됩니다</h2>
+      <p class="lead center" id="keypadHint" style="color:var(--ink-soft);font-size:15px;"></p>
+      <div class="keypad-wrap">
+        <div class="keypad-display" id="kdisplay"></div>
+        <div class="wrong-msg" id="wrongMsg"></div>
+        <div class="keypad" id="keypadBtns"></div>
+        <div class="btn-row">
+          <button class="btn-ghost" onclick="clearCode()">지우기</button>
+          <button class="btn-primary" onclick="submitCode()">문 열기</button>
+        </div>
+        <div class="hint-text">힌트가 필요하면 위 코드칸을 다시 확인하세요</div>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-success">
+      <span class="badge" style="background:var(--teal-deep);">ESCAPE SUCCESS</span>
+      <h1 class="center">문이 열렸습니다 🎉</h1>
+      
+      <div class="center">
+        <div class="result-summary-box">
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="lbl">학번</div>
+              <div class="val" id="sumId">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="lbl">이름</div>
+              <div class="val" id="sumName">--</div>
+            </div>
+            <div class="summary-item">
+              <div class="lbl">⏱️ 소요 시간</div>
+              <div class="val" id="sumTime">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-code" id="successCode"></div>
+      <div class="sdg-note" id="sdgNote"></div>
+      <p class="lead"><strong>첫 번째 실전 임무가 기다립니다.</strong> 이제 세계지도로 이동해서, 방금 푼 사건들과 내가 궁금한 곳을 지도에 표시해 볼까요?</p>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="goTo('bonus')">⭐ 히든 잠금 도전하기 (보너스)</button>
+        <button class="btn-ghost" onclick="restart()">처음부터 다시 보기</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-bonus">
+      <span class="badge" style="background:var(--pink-deep);">⭐ 히든 잠금 · 보너스</span>
+      <h2>오늘 다룬 사건 중, 실제로 <u>가장 최근에</u> 보도된 사건은 무엇일까요?</h2>
+      <div class="options" id="opts-bonus">
+        <button class="opt" onclick="pickBonus(false,this)"><span><span class="oi">①</span>세우타 국경 대량 월경 — KBS(2026.8.3)</span></button>
+        <button class="opt" onclick="pickBonus(true,this)"><span><span class="oi">②</span>뉴올리언스 공식 기후 난민 지정 — 특파원 현장(2026.8.10)</span></button>
+        <button class="opt" onclick="pickBonus(false,this)"><span><span class="oi">③</span>세계 식량위기 — WFP 2026 세계 식량 전망(연간 발표, 특정 날짜 없음)</span></button>
+      </div>
+      <div class="reveal" id="reveal-bonus">
+        <div class="ans" id="bonus-result"></div>
+        <div class="fact">날짜만 비교하면 8월 10일 보도인 뉴올리언스 소식이 가장 최근이에요. 제일 충격적인 사건이 항상 제일 최신 소식은 아니라는 것, 세계 시민이라면 꼭 확인해야겠죠?</div>
+      </div>
+      <div class="btn-row" id="next-bonus" style="display:none;margin-top:18px;">
+        <button class="btn-primary" onclick="goTo('final')">완료하기 →</button>
+      </div>
+    </section>
+
+    <section class="screen" id="screen-final">
+      <span class="badge" style="background:var(--teal-deep);">MISSION COMPLETE</span>
+      <h1 class="center" id="finalTitle">특급 세계 시민 인증 완료 🏅</h1>
+      
+      <div class="center" style="margin: 20px 0;">
+        <div class="time-hero-badge" style="background:var(--teal);">
+          <span id="finalStudent"></span>
+          <span>⏱️</span>
+          <span class="time-val" id="finalTimeDisplay">0초</span>
+        </div>
+      </div>
+
+      <p class="lead center">이제 진짜 임무로 이동합니다. 세계지도에 오늘의 사건과 궁금한 나라를 표시해 볼까요?</p>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn-ghost" onclick="restart()">처음부터 다시 보기</button>
+      </div>
+    </section>
+
+  </div>
+  <footer class="progress">세계 시민 프로젝트</footer>
+</div>
+
+<script>
+  let pStudentId = '';
+  let pStudentName = '';
+  let pMode = 0;
+  let timeStart = 0;
+  let finalFormattedTime = '';
+
+  let muted = false, actx = null;
+  function ctx(){ if(!actx){ actx = new (window.AudioContext||window.webkitAudioContext)(); } return actx; }
+  function tone(freq, dur, type, gain){
+    if(muted) return;
+    try{
+      const a = ctx();
+      const osc = a.createOscillator(), g = a.createGain();
+      osc.type = type||'sine'; osc.frequency.value = freq;
+      g.gain.value = gain!==undefined?gain:0.06;
+      osc.connect(g); g.connect(a.destination);
+      osc.start();
+      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + dur);
+      osc.stop(a.currentTime + dur + 0.02);
+    }catch(e){}
+  }
+  function playTick(){ tone(880,0.06,'square',0.03); }
+  function playCorrect(){ tone(660,0.12,'sine',0.07); setTimeout(()=>tone(990,0.18,'sine',0.07),110); }
+  function playWrong(){ tone(180,0.28,'sawtooth',0.06); }
+  function playUnlock(){ [520,660,780,1040].forEach((f,i)=>setTimeout(()=>tone(f,0.16,'triangle',0.06), i*90)); }
+  function toggleMute(){ muted = !muted; document.getElementById('muteBtn').textContent = muted? '🔇':'🔊'; }
+
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    document.getElementById('screen-'+id).classList.add('active');
+  }
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+    return a;
+  }
+  function optionLetter(i){ return ['①','②','③'][i]; }
+
+  const SDG_NAMES = {
+    1:'빈곤 종식',2:'기아 종식',3:'건강과 웰빙',4:'양질의 교육',5:'성평등',
+    6:'깨끗한 물과 위생',7:'깨끗한 에너지',8:'양질의 일자리',9:'산업과 혁신',
+    10:'불평등 감소',11:'지속가능한 도시',12:'책임 있는 소비',13:'기후변화 대응',
+    14:'해양생태계 보전',15:'육상생태계 보전',16:'평화와 정의',17:'지구촌 협력'
+  };
+
+  const CORE_ROUNDS = [
+    { sdg:'10', q:'최근 며칠 사이, 국경 하나를 몇 명이 한꺼번에 넘었을까요?', options:[{text:'1만 5천 명',correct:false},{text:'3만 명',correct:false},{text:'5만~6만 명',correct:true}], ans:'정답: 5만~6만 명', fact:'2026년 7월 30일~8월 1일, 모로코-스페인 세우타 국경으로 약 5만~6만 명이 한꺼번에 월경. 세우타 역사상 최대 규모의 집단 월경 사태였습니다.', src:'출처: KBS(2026.8.3)' },
+    { sdg:'2', q:'전 세계에서 먹을 게 부족해 생존이 위태로운 사람은 몇 명일까요?', options:[{text:'3억 명',correct:false},{text:'6억 명',correct:false},{text:'9억 명 이상',correct:true}], ans:'정답: 약 9억 9,300만 명', fact:'2025년 기준 전 세계 약 9억 9,300만 명이 심각한 식량 불안정 상태입니다. 2028년에는 10억 명을 넘어설 것으로 전망됩니다.', src:'출처: WFP 2026 세계 식량 전망' },
+    { sdg:'13', q:"미국의 한 도시가 최근 정부로부터 특별한 이름을 공식적으로 받았어요. 무엇일까요?", options:[{text:'세계 최초 해상 부유 도시',correct:false},{text:"미국 최초 '공식 기후 난민' 지정 도시",correct:true},{text:'세계에서 가장 안전한 도시',correct:false}], ans:"정답: 미국 최초 '공식 기후 난민' 지정 도시", fact:"미국 뉴올리언스 주민들이 정부에 의해 미국 최초 '공식 기후 난민'으로 지정되었고, 내륙 지역으로의 집단 이주 정책이 추진되고 있습니다.", src:'출처: 특파원 현장(2026.8.10)' }
+  ];
+  const CHALLENGE_EXTRA = [
+    { sdg:'12', q:"팔리지 않거나 버려진 옷들이 쌓여 만들어진 '옷 쓰레기산'은 어느 사막에 있을까요?", options:[{text:'사하라 사막(아프리카)',correct:false},{text:'아타카마 사막(칠레)',correct:true},{text:'고비 사막(몽골)',correct:false}], ans:'정답: 아타카마 사막(칠레)', fact:"칠레 아타카마 사막에 미국·유럽·아시아에서 팔리지 않거나 버려진 옷들이 쌓여 만들어진 '옷 쓰레기산'이 있습니다. 대량생산 뒤에는 노동 착취와 환경 오염이 있습니다.", src:'출처: 그린피스 코리아 / ESG경제' },
+    { sdg:'6', q:'지난 8월 6~7일 서울에서 열린 청소년 환경총회에는 몇 개국 청소년이 모였을까요?', options:[{text:'5개국',correct:false},{text:'18개국',correct:true},{text:'30개국',correct:false}], ans:'정답: 18개국', fact:"한국, 미국, 독일, 인도, 케냐 등 18개국에서 청소년·청년 약 300명이 모여 '기후위기와 물'을 주제로 논의하고 실천 결의안을 만들었습니다.", src:'출처: 더나은미래(2026.8)' },
+    { sdg:'14', q:'전 세계 해안에서 바다로 흘러가는 플라스틱 쓰레기는 연간 몇 톤일까요?', options:[{text:'3,700톤',correct:false},{text:'3만 7,000톤',correct:true},{text:'37만 톤',correct:false}], ans:'정답: 연간 약 3만 7,000톤', fact:'전 세계 해안에서 바다로 흘러 들어가는 플라스틱 쓰레기가 연간 약 3만 7,000톤에 이른다는 조사 결과가 나왔습니다.', src:'출처: 에너지경제(2026.1.22)' },
+    { sdg:'8', q:'2024년 기준, 전 세계에서 일터로 내몰린 아동은 몇 명일까요?', options:[{text:'3,800만 명',correct:false},{text:'8,800만 명',correct:false},{text:'1억 3,800만 명',correct:true}], ans:'정답: 약 1억 3,800만 명', fact:'유엔은 2024년 기준 전 세계 아동노동 인구를 약 1억 3,800만 명으로 추산했습니다. 현재 추세라면 근절까지 수백 연이 걸릴 수 있다는 우려도 나옵니다.', src:'출처: 뉴스비전e, 유엔·국제노동기구(ILO) 2024년 기준' }
+  ];
+
+  let ACTIVE_ROUNDS = [];
+  let curIndex = 0;
+  let timerHandle = null;
+  const timerDur = 8;
+
+  function startGame(mode){
+    const idVal = document.getElementById('studentIdInput').value.trim();
+    const nameVal = document.getElementById('studentNameInput').value.trim();
+    const errBox = document.getElementById('introError');
+
+    if(!idVal || !nameVal) {
+      errBox.textContent = '❌ 학번과 이름을 모두 입력해주세요!';
+      document.getElementById('cardEl').classList.add('shake');
+      setTimeout(()=>document.getElementById('cardEl').classList.remove('shake'),450);
+      return;
+    }
+
+    errBox.textContent = '';
+    pStudentId = idVal;
+    pStudentName = nameVal;
+    pMode = mode;
+    timeStart = Date.now(); 
+
+    ACTIVE_ROUNDS = mode===3 ? CORE_ROUNDS.slice() : CORE_ROUNDS.concat(CHALLENGE_EXTRA);
+    curIndex = 0;
+    buildLocksAndSlots();
+    goTo('round');
+    loadRound();
+  }
+
+  function buildLocksAndSlots(){
+    const locks = document.getElementById('locks'); locks.innerHTML='';
+    const strip = document.getElementById('codeStrip'); strip.innerHTML='';
+    ACTIVE_ROUNDS.forEach((r,i)=>{
+      const l=document.createElement('div'); l.className='lock'; l.id='lock'+i; l.textContent='🔒';
+      locks.appendChild(l);
+      const s=document.createElement('div'); s.className='code-slot'; s.id='slot'+i; s.textContent='?';
+      strip.appendChild(s);
+    });
+  }
+
+  function loadRound(){
+    const r = ACTIVE_ROUNDS[curIndex];
+    document.getElementById('roundTag').textContent = '잠금 '+(curIndex+1)+' / '+ACTIVE_ROUNDS.length;
+    document.getElementById('questionText').textContent = r.q;
+    const opts = document.getElementById('optsContainer'); opts.innerHTML='';
+    shuffle(r.options).forEach((opt,i)=>{
+      const b=document.createElement('button'); b.className='opt';
+      b.innerHTML = '<span><span class="oi">'+optionLetter(i)+'</span>'+opt.text+'</span>';
+      b.onclick = ()=>pick(opt.correct,b);
+      opts.appendChild(b);
+    });
+    document.getElementById('revealPanel').classList.remove('show');
+    document.getElementById('nextBtnRow').style.display='none';
+    runTimer();
+  }
+
+  function runTimer(){
+    clearInterval(timerHandle);
+    let t = timerDur;
+    const bar = document.getElementById('timerBar');
+    bar.style.transition='none'; bar.style.width='100%'; bar.classList.remove('danger');
+    void bar.offsetWidth;
+    bar.style.transition='width 1s linear';
+    timerHandle = setInterval(()=>{
+      t -= 1;
+      bar.style.width = Math.max(0,(t/timerDur*100))+'%';
+      if(t<=3) bar.classList.add('danger');
+      if(t>0) playTick();
+      if(t<=0){
+        clearInterval(timerHandle);
+        const wrap = document.getElementById('optsContainer');
+        if(!wrap.querySelector('.opt.selected')){
+          wrap.querySelectorAll('.opt').forEach(b=>b.setAttribute('disabled','true'));
+          revealCurrent(false);
+        }
+      }
+    },1000);
+  }
+
+  function pick(isCorrect, btn){
+    if(isCorrect){
+      clearInterval(timerHandle);
+      const wrap = document.getElementById('optsContainer');
+      wrap.querySelectorAll('.opt').forEach(b=>b.setAttribute('disabled','true'));
+      btn.classList.add('selected');
+      playCorrect();
+      setTimeout(()=>revealCurrent(true), 450);
+    } else {
+      btn.setAttribute('disabled','true');
+      btn.classList.add('wrong-picked');
+      document.getElementById('cardEl').classList.add('shake');
+      setTimeout(()=>document.getElementById('cardEl').classList.remove('shake'),450);
+      playWrong();
+    }
+  }
+
+  function revealCurrent(wasCorrect){
+    const r = ACTIVE_ROUNDS[curIndex];
+    const wrap = document.getElementById('optsContainer');
+    wrap.querySelectorAll('.opt').forEach(b=>{
+      b.setAttribute('disabled','true');
+      if(b.textContent.includes(r.options.find(o=>o.correct).text)) b.classList.add('correct');
+    });
+    document.getElementById('ansText').textContent = (wasCorrect ? '🎉 정답이에요! ' : '⏰ 시간 종료! ') + r.ans;
+    document.getElementById('factText').textContent = r.fact;
+    document.getElementById('srcText').textContent = r.src;
+    document.getElementById('digitText').textContent = r.sdg;
+    document.getElementById('revealPanel').classList.add('show');
+
+    const slot = document.getElementById('slot'+curIndex);
+    slot.textContent = r.sdg; slot.classList.add('filled');
+    const lock = document.getElementById('lock'+curIndex);
+    lock.textContent = '🔓'; lock.classList.add('solved');
+    playUnlock();
+
+    const isLast = curIndex === ACTIVE_ROUNDS.length-1;
+    document.getElementById('nextBtn').textContent = isLast ? '진짜 탈출 코드 입력하러 가기 →' : '다음 잠금으로 →';
+    document.getElementById('nextBtnRow').style.display='flex';
+  }
+
+  function goNext(){
+    if(curIndex >= ACTIVE_ROUNDS.length-1){
+      goTo('keypad');
+      prepareKeypad();
+    } else {
+      curIndex++;
+      loadRound();
+    }
+  }
+
+  let MASTER_CODE = '';
+  let entered = '';
+  function prepareKeypad(){
+    MASTER_CODE = ACTIVE_ROUNDS.map(r=>r.sdg).join('');
+    entered = '';
+    document.getElementById('keypadHint').textContent =
+      ACTIVE_ROUNDS.map(r=>r.sdg).join(' → ') + ' 을 그대로 이어쓰면?';
+    renderKeypad();
+  }
+  function renderKeypad(){
+    const kp = document.getElementById('keypadBtns');
+    kp.innerHTML = '';
+    for(let n=1;n<=9;n++){
+      const b = document.createElement('button');
+      b.textContent = n; b.onclick = ()=>pressDigit(n);
+      kp.appendChild(b);
+    }
+    kp.appendChild(document.createElement('div'));
+    const zero = document.createElement('button');
+    zero.textContent='0'; zero.onclick = ()=>pressDigit(0);
+    kp.appendChild(zero);
+    const back = document.createElement('button');
+    back.textContent='⌫'; back.onclick = ()=>{ entered = entered.slice(0,-1); renderDisplay(); };
+    kp.appendChild(back);
+    renderDisplay();
+  }
+  function pressDigit(n){
+    if(entered.length>=MASTER_CODE.length) return;
+    entered += n; playTick(); renderDisplay();
+  }
+  function renderDisplay(){
+    const d = document.getElementById('kdisplay');
+    d.innerHTML='';
+    for(let i=0;i<MASTER_CODE.length;i++){
+      const c = document.createElement('div');
+      c.className = 'kd-cell'+(entered[i]?' on':'');
+      c.textContent = entered[i] || '';
+      d.appendChild(c);
+    }
+  }
+  function clearCode(){ entered=''; renderDisplay(); document.getElementById('wrongMsg').textContent=''; }
+  
+  function submitCode(){
+    if(entered === MASTER_CODE){
+      playUnlock();
+      
+      // 소요 시간 계산
+      const totalSecs = Math.max(1, Math.floor((Date.now() - timeStart) / 1000));
+      const mins = Math.floor(totalSecs / 60);
+      const secs = totalSecs % 60;
+      finalFormattedTime = mins > 0 ? `${totalSecs}초 (${mins}분 ${secs}초)` : `${totalSecs}초`;
+
+      renderSuccess();
+      goTo('success');
+
+    } else {
+      playWrong();
+      document.getElementById('wrongMsg').textContent = '코드가 맞지 않아요. 다시 시도해 보세요!';
+      document.getElementById('cardEl').classList.add('shake');
+      setTimeout(()=>document.getElementById('cardEl').classList.remove('shake'),450);
+    }
+  }
+
+  function renderSuccess(){
+    // 시간 및 인포 요약 표시
+    document.getElementById('sumId').textContent = pStudentId;
+    document.getElementById('sumName').textContent = pStudentName;
+    document.getElementById('sumTime').textContent = finalFormattedTime;
+    document.getElementById('finalStudent').textContent = `${pStudentId} ${pStudentName}`;
+    document.getElementById('finalTimeDisplay').textContent = finalFormattedTime;
+
+    const codeWrap = document.getElementById('successCode');
+    codeWrap.innerHTML = '';
+    ACTIVE_ROUNDS.forEach(r=>{
+      const d = document.createElement('div'); d.className='d'; d.textContent = r.sdg;
+      codeWrap.appendChild(d);
+    });
+    const list = ACTIVE_ROUNDS.map(r=> r.sdg+'('+(SDG_NAMES[r.sdg]||'')+')').join(' · ');
+    document.getElementById('sdgNote').innerHTML =
+      '사실 이 숫자들은 <strong>우리가 앞으로 만날 SDGs(지속가능발전목표) 번호</strong>였습니다.<br>' +
+      list + ' — 오늘 풀었던 사건들과 그대로 연결돼요.';
+  }
+
+  function pickBonus(isCorrect, btn){
+    const wrap = document.getElementById('opts-bonus');
+    wrap.querySelectorAll('.opt').forEach(b=>b.setAttribute('disabled','true'));
+    btn.classList.add(isCorrect?'selected':'wrong-picked');
+    isCorrect? playCorrect() : playWrong();
+    document.getElementById('bonus-result').textContent = isCorrect
+      ? '정답이에요! ⭐ 특급 세계 시민 배지 획득!'
+      : '아쉬워요! 정답은 ② 뉴올리언스 소식이었어요.';
+    document.getElementById('reveal-bonus').classList.add('show');
+    document.getElementById('next-bonus').style.display='flex';
+    document.getElementById('finalTitle').textContent = isCorrect
+      ? '⭐ 특급 세계 시민 인증 완료 🏅'
+      : '세계 시민 인증 완료 🏅';
+  }
+
+  function restart(){ location.reload(); }
+</script>
+</body>
+</html>
